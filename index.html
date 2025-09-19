@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plateformes Professionnelles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 700px;
+        }
+        
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 40px;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            border: none;
+            cursor: pointer;
+            min-width: 280px;
+        }
+        
+        .btn-classepro {
+            background: linear-gradient(to right, #834d9b, #d04ed6);
+        }
+        
+        .btn-botpro {
+            background: linear-gradient(to right, #2193b0, #6dd5ed);
+        }
+        
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover:before {
+            opacity: 1;
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn i {
+            margin-left: 12px;
+            transition: transform 0.3s ease;
+            font-size: 1.4rem;
+        }
+        
+        .btn:hover i {
+            transform: translateX(5px);
+        }
+        
+        .logo {
+            margin-bottom: 30px;
+        }
+        
+        .logo i {
+            font-size: 4.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 50px;
+            gap: 25px;
+        }
+        
+        .feature {
+            flex: 1;
+            min-width: 220px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature i {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            color: #6dd5ed;
+        }
+        
+        .feature h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            margin-top: 60px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2.3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            p {
+                font-size: 1.1rem;
+            }
+            
+            .btn {
+                padding: 18px 35px;
+                font-size: 1.1rem;
+                min-width: 250px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-rocket"></i>
+        </div>
+        
+        <h1>Plateformes Professionnelles</h1>
+        <p class="subtitle">Accédez à nos services spécialisés</p>
+        
+        <p>Nous proposons deux plateformes distinctes conçues pour répondre à vos besoins spécifiques. Choisissez celle qui correspond à vos exigences.</p>
+        
+        <div class="buttons-container">
+            <a href="#" class="btn btn-classepro" id="classeproBtn">
+                Plateforme Éducative <i class="fas fa-graduation-cap"></i>
+            </a>
+            <a href="#" class="btn btn-botpro" id="botproBtn">
+                Assistant Intelligent <i class="fas fa-robot"></i>
+            </a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-lock"></i>
+                <h3>Accès Sécurisé</h3>
+                <p>Connexion cryptée et protection des données</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <h3>Performance</h3>
+                <p>Interface optimisée pour une expérience fluide</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Fiabilité</h3>
+                <p>Service disponible 24h/24 et 7j/7</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Services Professionnels - Tous droits réservés</p>
+    </footer>
+
+    <script>
+        // Gestion des redirections
+        document.getElementById('classeproBtn').addEventListener('click', function() {
+            // Animation de chargement
+            const originalText = this.innerHTML;
+            this.innerHTML = 'Redirection en cours <i class="fas fa-spinner fa-spin"></i>';
+            
+            // Redirection après un court délai pour l'effet visuel
+            setTimeout(function() {
+                window.location.href = "https://classepro.github.io/Classepro/";
+            }, 800);
+        });
+        
+        document.getElementById('botproBtn').addEventListener('click', function() {
+            // Animation de chargement
+            const originalText = this.innerHTML;
+            this.innerHTML = 'Redirection en cours <i class="fas fa-spinner fa-spin"></i>';
+            
+            // Redirection après un court délai pour l'effet visuel
+            setTimeout(function() {
+                window.location.href = "https://predictionbotpro.github.io/BOTPRO/";
+            }, 800);
+        });
+    </script>
+</body>
+</html>
