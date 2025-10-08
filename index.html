@@ -488,7 +488,8 @@ Maintenant, accueille l'utilisateur comme l'Expert ClassePro.`
         method: "POST",
         headers: {
           "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://classepro.github.io/bot/"
         },
         body: JSON.stringify({
           model: MODEL,
