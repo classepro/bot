@@ -125,7 +125,7 @@ investissement.
     md_path = REPORT_DIR / "rapport_performance.md"
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🔄 Régénérer le rapport", use_container_width=False):
+        if st.button("🔄 Régénérer le rapport"):
             from ...reporting import write_reports
 
             write_reports()
