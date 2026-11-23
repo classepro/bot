@@ -99,8 +99,34 @@ class Training:
 
 
 @dataclass(frozen=True)
+class Legacy:
+    """ROBOT V4.5 — constantes reconstituées depuis `legacy/ROBOTV4.5.html`.
+
+    Aucune de ces valeurs n'est devinée : chacune est soit lue dans le code
+    JavaScript d'origine (`MIN_INPUTS`, `weight_step`), soit une convention de
+    reproduction documentée (fenêtres, ordre de saisie, politiques de mise).
+    """
+
+    min_inputs: int = 5              # `if (oddsArray.length < 5)` -> refus
+    weight_step: float = 0.1         # `1 + (i * 0.1)` du mode « advanced »
+    horizon_historical: int = 5      # promesse historique : « dans les 5 rounds »
+    windows: tuple[int, ...] = (5, 10, 20)   # nb de cotes passées saisies
+    default_window: int = 10
+    default_order: str = "recent"    # la cote la plus récente saisie en premier
+    reference_window: int = 5_000    # loi marginale causale (référence)
+    reference_refresh: int = 250     # rafraîchissement de la référence
+    track_record_window: int = 1_000  # historique glissant pour la proba auto-déclarée
+    max_attempts: int = 5            # manches jouées au maximum par prédiction
+    bankroll_fraction: float = 0.02  # exposition max par manche (2 % de la bankroll)
+    desired_success: float = 0.95    # taux visé par la gestion de mise (guide)
+    ml_selection_threshold: float = 0.80  # seuil de sélection de cible des modèles ML
+    n_boot: int = 1_000              # rééchantillonnages bootstrap
+
+
+@dataclass(frozen=True)
 class Config:
     rules: Rules = field(default_factory=Rules)
+    legacy: Legacy = field(default_factory=Legacy)
     targets: Targets = field(default_factory=Targets)
     backtest: Backtest = field(default_factory=Backtest)
     probabilities: Probabilities = field(default_factory=Probabilities)
@@ -114,6 +140,6 @@ class Config:
 CONFIG = Config()
 
 __all__ = [
-    "CONFIG", "Config", "Rules", "Targets", "Backtest", "Probabilities", "Strategy", "Training",
+    "CONFIG", "Config", "Rules", "Targets", "Backtest", "Probabilities", "Strategy", "Training", "Legacy",
     "ROOT", "DATA_DIR", "RAW_DIR", "EXPORT_DIR", "MODEL_DIR", "REPORT_DIR", "DB_PATH",
 ]

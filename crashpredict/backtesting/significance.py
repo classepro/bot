@@ -114,3 +114,20 @@ def required_sample_size(p0: float, min_effect: float = 0.01, alpha: float = 0.0
     z_a, z_b = 1.959963985, 0.841621234
     num = (z_a * np.sqrt(2 * p_bar * (1 - p_bar)) + z_b * np.sqrt(p0 * (1 - p0) + p1 * (1 - p1))) ** 2
     return int(np.ceil(num / max((p1 - p0) ** 2, 1e-12)))
+
+
+def wilson_interval(successes: int, n: int, alpha: float = 0.05) -> tuple[float, float, float]:
+    """IC de Wilson (score) d'une proportion — exact pour p proche de 0 ou 1.
+
+    Choisi plutôt que l'intervalle normal : les taux des stratégies légacy sont
+    souvent > 95 % ou < 5 %, zone où l'approximation normale est fausse.
+    Retourne (proportion observée, borne basse, borne haute).
+    """
+    if n <= 0:
+        return float("nan"), float("nan"), float("nan")
+    z = 1.959963985 if abs(alpha - 0.05) < 1e-9 else float(_st.norm.ppf(1 - alpha / 2)) if _st is not None else 1.959963985
+    p = successes / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = (z / denom) * math.sqrt(max(p * (1 - p) / n + z * z / (4 * n * n), 0.0))
+    return float(p), float(max(0.0, centre - half)), float(min(1.0, centre + half))

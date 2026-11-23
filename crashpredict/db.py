@@ -361,11 +361,26 @@ def list_runs(limit: int = 20) -> list[sqlite3.Row]:
         return conn.execute("SELECT * FROM backtest_runs ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
 
 
-def latest_finished_run() -> sqlite3.Row | None:
+def latest_finished_run(kind: str | None = "ML") -> sqlite3.Row | None:
+    """Dernier run terminé d'une famille donnée.
+
+    Les runs ROBOT V4.5 sont enregistrés dans la même table mais portent
+    `config.kind = 'ROBOTV45'` ; ils ne doivent jamais être confondus avec un
+    walk-forward ML (leurs métriques n'ont ni la même structure ni le même sens).
+    """
     with connect() as conn:
-        return conn.execute(
-            "SELECT * FROM backtest_runs WHERE status='DONE' ORDER BY finished_at DESC LIMIT 1"
-        ).fetchone()
+        rows = conn.execute(
+            "SELECT * FROM backtest_runs WHERE status='DONE' ORDER BY finished_at DESC"
+        ).fetchall()
+    for row in rows:
+        try:
+            cfg = json.loads(row["config"]) if row["config"] else {}
+        except (json.JSONDecodeError, TypeError):
+            cfg = {}
+        run_kind = cfg.get("kind", "ML")
+        if kind is None or run_kind == kind:
+            return row
+    return None
 
 
 def run_metrics(run_id: str) -> list[sqlite3.Row]:

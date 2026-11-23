@@ -2,7 +2,7 @@ import sys, traceback
 from streamlit.testing.v1 import AppTest
 
 PAGES = ["📊 Dashboard", "🎯 Prédiction", "🗂 Historique", "🧠 Entraînement",
-         "🔬 Backtesting", "🗄 Données", "📄 Rapport scientifique"]
+         "🔬 Backtesting", "🤖 ROBOT V4.5", "🗄 Données", "📄 Rapport scientifique"]
 ok = True
 for page in PAGES:
     try:

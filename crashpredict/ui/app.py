@@ -24,6 +24,7 @@ from crashpredict.ui.pages import (
     page_dashboard,
     page_data,
     page_history,
+    page_legacy,
     page_prediction,
     page_report,
     page_training,
@@ -45,6 +46,7 @@ PAGES = {
     "🗂 Historique": page_history.render,
     "🧠 Entraînement": page_training.render,
     "🔬 Backtesting": page_backtesting.render,
+    "🤖 ROBOT V4.5": page_legacy.render,
     "🗄 Données": page_data.render,
     "📄 Rapport scientifique": page_report.render,
 }

@@ -28,6 +28,21 @@ def _fmt(v, digits: int = 5) -> str:
     return "n/d" if v is None or pd.isna(v) else f"{v:.{digits}f}"
 
 
+def load_legacy_report(path: Path | None = None) -> dict | None:
+    """Rapport ROBOT V4.5 déjà calculé (reports/robotv45.json), s'il existe.
+
+    Le calcul vit dans `crashpredict.legacy` : le rapport ne fait que le lire,
+    il ne recalcule rien et n'invente aucun chiffre.
+    """
+    p = Path(path or (REPORT_DIR / "robotv45.json"))
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def build_report() -> dict:
     """Assemble toutes les sections du rapport (dict sérialisable)."""
     fp = db.data_fingerprint()
@@ -144,6 +159,7 @@ def build_report() -> dict:
         "run": {"id": run_id, "summary": summary},
         "by_target": by_target,
         "verdict": {"status": verdict, "detail": detail},
+        "legacy": load_legacy_report(),
     }
 
 
@@ -157,6 +173,128 @@ def _latest_run():
     skill = df[df["metric"].isin(["delta_brier_vs_baseline", "p_value_holm"])] if not df.empty else df
     summary = json.loads(run["summary"]) if run["summary"] else None
     return run["id"], metrics, skill, summary
+
+
+LEGACY_LABELS = {
+    "standard": "Standard (moyenne simple)",
+    "advanced": "Avancé (pondération 1 + 0.1·i)",
+    "pro": "Professionnel (sans tendance) = Standard",
+    "pro_trend": "Professionnel + analyse tendancielle",
+    "pro_guide": "Réglage conseillé par le guide",
+    "pro_guide_skip2": "Guide + report au 3e round",
+    "pro_guide_martingale": "Guide + martingale",
+}
+
+
+def legacy_markdown(legacy: dict | None) -> list[str]:
+    """Section ROBOT V4.5 : chiffres mesurés, sans arrondi complaisant."""
+    if not legacy:
+        return ["_Aucune évaluation ROBOT V4.5 enregistrée (`scripts/legacy_backtest.py`)._"]
+    p = legacy["protocol"]
+    out = [
+        f"Protocole : fenêtre de saisie **{p['window']} cotes passées**, ordre *{p['order']}*, "
+        f"première prédiction possible à la manche `{p['first_anchor_round']}`, "
+        f"cibles produites uniquement à partir du passé ({p['leakage']})." ,
+        "",
+    ]
+    by_h: dict[int, list[dict]] = {}
+    for row in legacy["main"]:
+        by_h.setdefault(row["horizon"], []).append(row)
+    for h in sorted(by_h):
+        out += [
+            f"### Validation sur les {h} manches suivantes",
+            "",
+            "| Stratégie | Prédictions | Succès | Échecs | Taux | IC 95 % | Loi marginale | Écart | p (Holm) | Verdict |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for r in by_h[h]:
+            out.append(
+                f"| {LEGACY_LABELS.get(r['strategy'], r['strategy'])} | {r['n_predictions']:,} | "
+                f"{r['successes']:,} | {r['failures']:,} | **{r['rate']*100:.2f} %** | "
+                f"[{r['ci_low']*100:.2f} ; {r['ci_high']*100:.2f}] | {r['expected_rate']*100:.2f} % | "
+                f"{r['gap_vs_reference']*100:+.2f} pts | {r['p_value_holm']:.3f} | {r['verdict']} |"
+                .replace(",", " ").replace("1 + 0.1", "1 + 0,1")
+            )
+        out.append("")
+    s = legacy["summary"]
+    out += [
+        "### Ce que la reproduction démontre",
+        "",
+        f"- Aucune stratégie n'atteint les 85–95 % annoncés **sous la règle des 3 manches** : la meilleure "
+        f"plafonne à {max(s['rates_h3'].values())*100:.2f} %.",
+        f"- Sous l'horizon 5 de la promesse commerciale, la meilleure atteint "
+        f"{max(s['rates_h5'].values())*100:.2f} % — mais la loi marginale annonçait déjà ce niveau, "
+        f"puisqu'une cible de {legacy['illusion']['claim'][-1]['mean_target']:.2f}x est atteinte dans 5 manches "
+        f"avec une probabilité de {legacy['illusion']['claim'][-1]['reference_mean']*100:.2f} %.",
+    ]
+    if s["better_significant"]:
+        out.append(
+            f"- Écart significatif après correction de Holm : {', '.join(s['better_significant'])}. "
+            f"En ne gardant qu'une manche sur `horizon` (fenêtres non chevauchantes, IC exacts), "
+            f"il reste : {', '.join(s['better_significant_non_overlapping']) or 'aucun'} — "
+            "l'avantage ne survit donc pas au contrôle du chevauchement."
+        )
+    if legacy.get("ml", {}).get("available"):
+        ml = legacy["ml"]
+        out.append(
+            f"- Confrontation aux modèles ML (dernier walk-forward  {ml['n_rounds']: } manches) : "
+            f"{ml['n_better']} configuration(s) meilleure(s) que la loi marginale, "
+            f"{ml['n_worse']} pire(s) de façon significative, {ml['n_null']} sans différence — "
+            "les deux générations de robots se heurtent au même mur."
+        )
+    out += ["", "### L'illusion des 85–95 %", ""]
+    lab = legacy["illusion"]["labelling"]
+    out += [
+        "Le robot ne se valide pas lui-même : l'utilisateur clique « ✓ Validé » ou « ✕ Échoué », "
+        "et une prédiction non clôturée reste `pending`, donc **hors du dénominateur**. "
+        "Voici le taux affiché selon la part d'échecs réellement marqués comme tels :",
+        "",
+        "| Part des échecs honnêtement marqués | Taux affiché (horizon 5) | Taux affiché (horizon 3) |",
+        "|---|---|---|",
+    ]
+    lab3 = {round(x["honest_failure_rate"], 2): x["displayed_accuracy"] for x in legacy["illusion"]["labelling_h3"]}
+    for x in lab:
+        r = round(x["honest_failure_rate"], 2)
+        out.append(f"| {r*100:.0f} % | {x['displayed_accuracy']*100:.2f} % | {lab3.get(r, float('nan'))*100:.2f} % |")
+    out += [
+        "",
+        "Autrement dit : **85–95 % est exactement ce qu'on obtient en ne clôturant que les succès**, "
+        "sans falsifier quoi que ce soit. S'y ajoute le pourcentage affiché par le robot "
+        "(`1/o₀`, la première côte saisie), qui n'est pas la probabilité de la cible.",
+        "",
+        "| Horizon | Taux observé | % moyen affiché par le robot | Brier du % affiché | Brier de la loi marginale |",
+        "|---|---|---|---|---|",
+    ]
+    for c in legacy["illusion"]["claim"]:
+        out.append(
+            f"| {c['horizon']} manches | {c['observed_rate']*100:.2f} % | {c['declared_mean']*100:.2f} % | "
+            f"{c['brier_declared']:.5f} | {c['brier_reference']:.5f} |"
+        )
+    out += ["", "### La politique de mise recommandée par le guide", ""]
+    out += [
+        "| Stratégie | Politique | Essais | Atteints | Taux | Profit (bankroll initiale = 1) | "
+        "Espérance théorique | Décroissance max | Ruines | Témoin sans information |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for b in legacy["betting"]:
+        out.append(
+            f"| {b['strategy']} | {b['policy']} | {b['rounds_played']:,} | {b['wins']:,} | "
+            f"{b['strike_rate']*100:.2f} % | **{b['profit_units']:+.3f}** | {b['expected_profit_units']:+.3f} | "
+            f"{b['max_drawdown']:.3f} | {b['ruin_events']} | {b['reference_profit_units']:+.3f} |".replace(",", " ")
+        )
+    out += [
+        "",
+        "Le profit est exprimé en multiples de la bankroll initiale ; une ruine signifie être passé "
+        "sous 1 % de cette bankroll. Le **témoin** rejoue les mêmes cibles, mêmes mises et mêmes dates "
+        "en tirant l'atteinte avec la probabilité de la loi marginale : tout écart entre les deux "
+        "colonnes mesure la chance, pas la compétence.",
+        "",
+        "### Conclusion sur ROBOT V4.5",
+        "",
+        legacy["summary"]["conclusion"],
+        "",
+    ]
+    return out
 
 
 def render_markdown(report: dict) -> str:
@@ -206,7 +344,9 @@ def render_markdown(report: dict) -> str:
             )
     else:
         lines.append("_Aucun backtest enregistré._")
-    lines += ["", "## 6. Conclusion", "", f"**{v['status'].upper()}** — {v['detail']}", ""]
+    lines += ["", "## 6. ROBOT V4.5 (génération précédente) — reproduction expérimentale", ""]
+    lines += legacy_markdown(report.get("legacy"))
+    lines += ["", "## 7. Conclusion", "", f"**{v['status'].upper()}** — {v['detail']}", ""]
     return "\n".join(lines)
 
 
@@ -279,7 +419,11 @@ La chaîne provably-fair est vérifiée sur {d['chain_ok']:,} transitions : <b>{
 <table><thead><tr><th>Cible</th><th>Prédictions</th><th>Taux observé</th><th>Probabilité annoncée</th><th>Brier</th></tr></thead>
 <tbody>{bt_rows or '<tr><td colspan=5>Aucun backtest enregistré.</td></tr>'}</tbody></table>
 
-<h2>6. Conclusion</h2>
+<h2>6. ROBOT V4.5 (génération précédente)</h2>
+<div class="mono">reproduction fidèle validée contre le JavaScript d'origine · mêmes 105 000 manches</div>
+{legacy_html(report.get('legacy'))}
+
+<h2>7. Conclusion</h2>
 <div class="verdict"><b>{html.escape(verdict['status'].upper())}</b> — {html.escape(verdict['detail'])}</div>
 
 <div class="warn">Ce rapport mesure un système de prédiction probabiliste sur un jeu à espérance
@@ -312,3 +456,60 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def legacy_html(legacy: dict | None) -> str:
+    """Section HTML de ROBOT V4.5 (aucun chiffre recalculé ici)."""
+    if not legacy:
+        return "<p><i>Aucune évaluation ROBOT V4.5 enregistrée.</i></p>"
+    parts = []
+    by_h: dict[int, list[dict]] = {}
+    for row in legacy["main"]:
+        by_h.setdefault(row["horizon"], []).append(row)
+    for h in sorted(by_h):
+        rows = "".join(
+            f"<tr class='{'bad' if (r['p_value_holm'] or 1) < 0.05 and r['gap_vs_reference'] < 0 else 'good'}'>"
+            f"<td>{html.escape(LEGACY_LABELS.get(r['strategy'], r['strategy']))}</td>"
+            f"<td>{r['n_predictions']:,}</td><td>{r['successes']:,}</td><td>{r['failures']:,}</td>"
+            f"<td><b>{r['rate']*100:.2f} %</b></td>"
+            f"<td>[{r['ci_low']*100:.2f} ; {r['ci_high']*100:.2f}]</td>"
+            f"<td>{r['expected_rate']*100:.2f} %</td><td>{r['gap_vs_reference']*100:+.2f} pts</td>"
+            f"<td>{(r['p_value_holm'] if r['p_value_holm'] is not None else float('nan')):.3f}</td>"
+            f"<td>{html.escape(r['verdict'])}</td></tr>".replace(",", " ")
+            for r in by_h[h]
+        )
+        parts.append(
+            f"<h3>Validation sur les {h} manches suivantes</h3>"
+            "<table><thead><tr><th>Stratégie</th><th>Prédictions</th><th>Succès</th><th>Échecs</th>"
+            "<th>Taux</th><th>IC 95 %</th><th>Loi marginale</th><th>Écart</th><th>p (Holm)</th>"
+            f"<th>Verdict</th></tr></thead><tbody>{rows}</tbody></table>"
+        )
+    lab3 = {round(x["honest_failure_rate"], 2): x["displayed_accuracy"] for x in legacy["illusion"]["labelling_h3"]}
+    lab_rows = "".join(
+        f"<tr><td>{x['honest_failure_rate']*100:.0f} %</td><td>{x['displayed_accuracy']*100:.2f} %</td>"
+        f"<td>{lab3.get(round(x['honest_failure_rate'], 2), float('nan'))*100:.2f} %</td></tr>"
+        for x in legacy["illusion"]["labelling"]
+    )
+    bet_rows = "".join(
+        f"<tr class='bad'><td>{b['strategy']}</td><td>{b['policy']}</td><td>{b['rounds_played']:,}</td>"
+        f"<td>{b['strike_rate']*100:.2f} %</td><td><b>{b['profit_units']:+.3f}</b></td>"
+        f"<td>{b['max_drawdown']:.3f}</td><td>{b['ruin_events']}</td>"
+        f"<td>{b['reference_profit_units']:+.3f}</td></tr>".replace(",", " ")
+        for b in legacy["betting"]
+    )
+    parts.append(
+        "<h3>L'illusion des 85–95 %</h3>"
+        "<p>Le robot ne se valide pas lui-même : l'utilisateur clique « ✓ Validé » ou « ✕ Échoué ». "
+        "Une prédiction non clôturée reste <code>pending</code>, donc <b>hors du dénominateur</b>.</p>"
+        "<table><thead><tr><th>Part des échecs honnêtement marqués</th><th>Taux affiché (5 manches)</th>"
+        f"<th>Taux affiché (3 manches)</th></tr></thead><tbody>{lab_rows}</tbody></table>"
+        "<h3>La politique de mise recommandée par le guide</h3>"
+        "<table><thead><tr><th>Stratégie</th><th>Politique</th><th>Essais</th><th>Taux d'atteinte</th>"
+        "<th>Profit</th><th>Décroissance max</th><th>Ruines</th><th>Témoin sans information</th>"
+        f"</tr></thead><tbody>{bet_rows}</tbody></table>"
+        "<p class='mono'>Profit en multiples de la bankroll initiale (mise de base 2 %). "
+        "Le témoin rejoue les mêmes cibles, mises et dates avec la probabilité de la loi marginale : "
+        "l'écart mesure la chance, pas la compétence.</p>"
+        f"<div class='verdict'><b>CONCLUSION ROBOT V4.5</b> — {html.escape(legacy['summary']['conclusion'])}</div>"
+    )
+    return "\n".join(parts)

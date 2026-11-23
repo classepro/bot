@@ -8,11 +8,11 @@ from .metrics import (
     roc_auc,
     summarize_probabilities,
 )
-from .significance import bootstrap_ci, paired_skill_test, holm_correction
+from .significance import bootstrap_ci, paired_skill_test, holm_correction, wilson_interval
 from .walk_forward import WalkForwardResult, run_walk_forward
 
 __all__ = [
     "brier_score", "calibration_table", "log_loss", "roc_auc", "summarize_probabilities",
-    "bootstrap_ci", "paired_skill_test", "holm_correction",
+    "bootstrap_ci", "paired_skill_test", "holm_correction", "wilson_interval",
     "WalkForwardResult", "run_walk_forward",
 ]

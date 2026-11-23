@@ -20,6 +20,7 @@ cette performance n'a aucune valeur.
 | `crashpredict/prediction` | Choix de la cible (fixe ou taux visé), probabilité calibrée, explication chiffrée |
 | `crashpredict/validation` | Application **unique** de la règle `MAX(3 manches) ≥ cible` |
 | `crashpredict/stats` | Agrégats du dashboard et graphiques Plotly |
+| `crashpredict/legacy` | **ROBOT V4.5** (génération précédente) : reproduction fidèle des 3 modes + évaluation expérimentale sous 2 horizons |
 | `crashpredict/ui` | Interface Streamlit (web) et PySide6 (desktop), sans logique métier |
 | `scripts/` | CLI : import, collecte, entraînement, backtest, prédiction |
 
@@ -56,7 +57,10 @@ python scripts/predict.py --rate 0.8
 streamlit run crashpredict/ui/app.py
 #    ou : ./start.sh   (bind 0.0.0.0, ports d'aperçu)
 
-# 5) interface desktop (optionnelle)
+# 5) évaluation de ROBOT V4.5 (génération précédente) — ~9 min
+python scripts/legacy_backtest.py
+
+# 6) interface desktop (optionnelle)
 pip install PySide6 && python -m crashpredict.ui.desktop.app
 ```
 
@@ -95,7 +99,8 @@ Tous les paramètres méthodologiques sont centralisés dans `crashpredict/confi
 
 | Paramètre | Valeur |
 |---|---|
-| horizon de validation | 3 manches |
+| horizon de validation | 3 manches (règle officielle) |
+| horizon historique ROBOT V4.5 | 5 manches (promesse commerciale, évaluée séparément) |
 | purge entraînement/test | 3 manches |
 | entraînement initial | 25 000 manches |
 | pas de réentraînement | 3 000 manches |
@@ -111,11 +116,13 @@ Variable d'environnement `CRASH_DB` pour changer le chemin de la base.
 ## 7. Tests
 
 ```bash
-pytest -q                                   # 34 tests (+1 desktop sauté si Qt indisponible)
-python tests/ui/check_pages.py              # les 7 pages Streamlit s'exécutent sans erreur
+pytest -q                                   # 65 tests (+1 desktop sauté si Qt indisponible)
+python tests/ui/check_pages.py              # les 8 pages Streamlit s'exécutent sans erreur
 ```
 
-Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas les features du passé**.
+Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas les features du passé**
+ni les cibles recalculées de ROBOT V4.5. Douze tests comparent la reproduction Python de
+ROBOT V4.5 au **JavaScript d'origine exécuté par Node**, cible et pourcentage affiché au bit près.
 
 ---
 
@@ -125,7 +132,10 @@ Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas
 - [`docs/02_INSTALLATION_ET_UTILISATION.md`](docs/02_INSTALLATION_ET_UTILISATION.md) — guide pas à pas
 - [`docs/03_METHODOLOGIE.md`](docs/03_METHODOLOGIE.md) — protocole statistique détaillé
 - [`docs/04_RAPPORT_PERFORMANCE.md`](docs/04_RAPPORT_PERFORMANCE.md) — résultats mesurés
+- [`docs/05_STRUCTURE_DU_CODE.md`](docs/05_STRUCTURE_DU_CODE.md) — organisation du code
+- [`docs/06_RETRO_INGENIERIE_ROBOTV45.md`](docs/06_RETRO_INGENIERIE_ROBOTV45.md) — **rétro-ingénierie du robot précédent**
 - `reports/rapport_performance.html` — rapport généré depuis la base
+- `reports/robotv45.json` — évaluation complète de ROBOT V4.5 (brute, régénérable)
 
 ---
 
@@ -139,6 +149,10 @@ Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas
 | Chaînes de Markov (ordres 1 à 5) | Brier 0.1188 contre 0.1110 pour la probabilité constante |
 | Gain espéré par manche, toutes cibles | 0.989 – 0.992 (marge maison ≈ 1 %) |
 | Modèle déployé automatiquement | `baseline_rolling_long` (loi empirique) |
+| ROBOT V4.5, règle des 3 manches (104 881 prédictions) | 71,13 % — soit exactement le taux de base (71,06 %) |
+| ROBOT V4.5, promesse « 5 manches » (104 879 prédictions) | 84,97 % — taux de base 84,81 %, seul écart significatif effacé hors chevauchement |
+| Stratégie de mise du guide (mise à chaque manche) | **−4,56 bankrolls**, 13 ruines, témoin sans information −4,03 |
+| Stratégie de mise du guide (martingale) | **−56,45 bankrolls**, 126 ruines |
 
 Détail complet et reproductible : [`docs/04_RAPPORT_PERFORMANCE.md`](docs/04_RAPPORT_PERFORMANCE.md).
 

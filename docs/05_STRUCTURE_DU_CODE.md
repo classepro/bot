@@ -29,19 +29,25 @@ bot/
 │   │   ├── engine.py          Moteur : probabilité, explication, prédiction persistée, stratégies
 │   │   └── targets.py         Grille de cibles, cible optimisée pour un taux visé
 │   ├── validation/three_rounds.py   Règle unique MAX(3) >= cible + clôture automatique
+│   ├── legacy/                 ROBOT V4.5 (génération précédente)
+│   │   ├── robotv45.py         Reproduction fidèle des 3 modes (même arrondi que toFixed)
+│   │   ├── backtest.py         Évaluation causale, 2 horizons, politique de mise, témoin
+│   │   ├── compare.py          Loi marginale, qualité de l'affirmation, confrontation ML
+│   │   └── run.py              Orchestration complète + persistance (JSON + metrics)
 │   ├── stats/                 Agrégats du dashboard + graphiques Plotly
 │   └── ui/
 │       ├── app.py             Entrée Streamlit (navigation, sidebar, état des données)
 │       ├── components.py      Cartes KPI, badges, tableaux
 │       ├── theme.py           CSS Streamlit + feuille de style PySide6
-│       ├── pages/             7 pages Streamlit
+│       ├── pages/             8 pages Streamlit (dont 🤖 ROBOT V4.5)
 │       └── desktop/           Équivalent PySide6 (6 pages, thread d'entraînement)
-├── scripts/                   import_data, collect_live, train, backtest, predict, report
-├── tests/                     27 tests + test des 7 pages Streamlit (tests/ui/check_pages.py)
+├── scripts/                   import_data, collect_live, train, backtest, predict, report, legacy_backtest
+├── legacy/                    ROBOTV4.5.html (artefact d'origine) + tools/oracle.js (oracle Node)
+├── tests/                     65 tests + test des 8 pages Streamlit (tests/ui/check_pages.py)
 ├── data/                      base SQLite, dumps bruts vérifiés, manifeste de provenance
 ├── models_store/              artefacts du dernier backtest (probabilités, métriques, importances)
 ├── reports/                   rapport HTML / Markdown / JSON
-└── docs/                      analyse, installation, méthodologie, rapport, structure
+└── docs/                      analyse, installation, méthodologie, rapport, structure, rétro-ingénierie
 ```
 
 ## Règles d'architecture
@@ -52,3 +58,6 @@ bot/
 4. **Tout paramètre méthodologique** dans `config.py` (jamais dupliqué dans une page).
 5. **Toute écriture en base** passe par `db.py` (upsert idempotent, transactions).
 6. **Aucune donnée inventée** : ni en base, ni dans les graphiques, ni dans les rapports.
+7. **Deux générations, une seule mesure** : `legacy/` ne peut pas modifier l'état du système
+   (aucune écriture métier) ; ses résultats sont mesurés avec les mêmes métriques, les mêmes
+   tests de significativité et la même règle de validation que les modèles actuels.
