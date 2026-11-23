@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
+data/exports/*.xlsx
+models_store/*.joblib
+models_store/*.txt
+models_store/*.ubj
+models_store/*.cbm
+reports/*.html
+reports/*.pdf
