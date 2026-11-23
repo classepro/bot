@@ -1,0 +1,18 @@
+[server]
+enableAgentApi = true
+address = "0.0.0.0"
+port = 8501
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "dark"
+primaryColor = "#6C5CE7"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#161B22"
+textColor = "#E6E6EF"
+font = "sans serif"

@@ -1,0 +1,26 @@
+# --- cœur ---
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.3
+joblib>=1.3
+
+# --- modèles (les 3 premiers sont utilisés par défaut) ---
+lightgbm>=4.0
+xgboost>=2.0
+catboost>=1.2          # optionnel : pip install -r requirements.txt l'installe, sinon il est simplement absent de la liste
+
+# --- interface web ---
+streamlit>=1.40
+plotly>=5.20
+
+# --- données ---
+openpyxl>=3.1          # lecture des exports XLSX de la table de vérification
+pyarrow>=14.0          # format parquet des probabilités de backtest
+playwright>=1.40       # collecteur live (nécessite ensuite : playwright install chromium)
+
+# --- interface desktop (optionnelle) ---
+PySide6>=6.6
+
+# --- tests ---
+pytest>=7.4

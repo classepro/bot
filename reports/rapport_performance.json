@@ -1,0 +1,219 @@
+{
+  "generated_at": "2026-11-23T10:10:27+00:00",
+  "data": {
+    "n_rounds": 104893,
+    "first": 5822149,
+    "last": 5927041,
+    "gaps": 0,
+    "duplicates": 0,
+    "chain_ok": 104892,
+    "chain_bad": 0,
+    "median": 1.98,
+    "mean": 14.429016044921966,
+    "max": 127151.29,
+    "share_1x": 0.020315941006549532
+  },
+  "marginal": [
+    {
+      "target": 1.2,
+      "p_single": 0.8233247213827424,
+      "p_validation_theory": 0.9944852306320883,
+      "observed": 0.994422781744859,
+      "gap": -6.244888722928277e-05,
+      "p_value": 0.7704088248363885,
+      "significant": false
+    },
+    {
+      "target": 1.5,
+      "p_single": 0.6595959692257825,
+      "p_validation_theory": 0.9605557155558632,
+      "observed": 0.9597296240859559,
+      "gap": -0.0008260914699073085,
+      "p_value": 0.17001596953946707,
+      "significant": false
+    },
+    {
+      "target": 1.8,
+      "p_single": 0.5503227098090435,
+      "p_validation_theory": 0.9090709056514134,
+      "observed": 0.9098778732207721,
+      "gap": 0.0008069675693587186,
+      "p_value": 0.36699526514060754,
+      "significant": false
+    },
+    {
+      "target": 2.0,
+      "p_single": 0.49549540960788613,
+      "p_validation_theory": 0.8715910287998626,
+      "observed": 0.8734019124615077,
+      "gap": 0.0018108836616450574,
+      "p_value": 0.08029138632775762,
+      "significant": false
+    },
+    {
+      "target": 2.5,
+      "p_single": 0.3967948290162356,
+      "p_validation_theory": 0.7805198907925617,
+      "observed": 0.7817639263616516,
+      "gap": 0.0012440355690899185,
+      "p_value": 0.3321431914734797,
+      "significant": false
+    },
+    {
+      "target": 3.0,
+      "p_single": 0.33067983564203524,
+      "p_validation_theory": 0.7001516059985676,
+      "observed": 0.7009657644602492,
+      "gap": 0.0008141584616815356,
+      "p_value": 0.566780863897949,
+      "significant": false
+    },
+    {
+      "target": 4.0,
+      "p_single": 0.24798604291992793,
+      "p_validation_theory": 0.5747173132067009,
+      "observed": 0.5746822892335853,
+      "gap": -3.502397311561101e-05,
+      "p_value": 0.982560357936973,
+      "significant": false
+    },
+    {
+      "target": 5.0,
+      "p_single": 0.19788737093991018,
+      "p_validation_theory": 0.48393303109182895,
+      "observed": 0.48379746594083384,
+      "gap": -0.00013556515099510946,
+      "p_value": 0.9310695765006889,
+      "significant": false
+    },
+    {
+      "target": 7.5,
+      "p_single": 0.13119083256270675,
+      "p_validation_theory": 0.34419732399431435,
+      "observed": 0.34400472871838383,
+      "gap": -0.00019259527593051828,
+      "p_value": 0.8965841592948689,
+      "significant": false
+    },
+    {
+      "target": 10.0,
+      "p_single": 0.09932025969321118,
+      "p_validation_theory": 0.26934698321384276,
+      "observed": 0.2690030603197605,
+      "gap": -0.0003439228940822492,
+      "p_value": 0.8048419923483222,
+      "significant": false
+    }
+  ],
+  "serial": {
+    "autocorr_lag1_1.5": 0.003259197779622109,
+    "autocorr_lag1_2.0": -0.004219098385885289,
+    "autocorr_lag1_5.0": 0.0019467762758482356,
+    "runs_observed": 52690,
+    "runs_expected": 52446.572955297306,
+    "runs_z": 1.5032642033269328,
+    "runs_p_value": 0.1327709271455806
+  },
+  "markov_sweep": [
+    {
+      "ordre": 1,
+      "n": 84890,
+      "brier": 0.1187667708058612,
+      "auc": 0.5034106134195322,
+      "taux_observe": 0.87278831428908
+    },
+    {
+      "ordre": 2,
+      "n": 84890,
+      "brier": 0.1187667708058612,
+      "auc": 0.5034106134195322,
+      "taux_observe": 0.87278831428908
+    },
+    {
+      "ordre": 3,
+      "n": 84890,
+      "brier": 0.1187667708058612,
+      "auc": 0.5034106134195322,
+      "taux_observe": 0.87278831428908
+    },
+    {
+      "ordre": 5,
+      "n": 84890,
+      "brier": 0.1187667708058612,
+      "auc": 0.5034106134195322,
+      "taux_observe": 0.87278831428908
+    },
+    {
+      "ordre": 0,
+      "n": 84890,
+      "brier": 0.1110293707105378,
+      "auc": 0.5,
+      "taux_observe": 0.87278831428908,
+      "note": "référence : probabilité constante 0.8735"
+    }
+  ],
+  "run": {
+    "id": "R2AFF817200934ACF",
+    "summary": {
+      "n_probabilities": 840000,
+      "models": [
+        "logistic",
+        "random_forest",
+        "lightgbm",
+        "xgboost"
+      ],
+      "targets": [
+        1.5,
+        2.0,
+        2.5,
+        5.0
+      ],
+      "folds": 3,
+      "duration_seconds": 147.1,
+      "n_rounds": 104893,
+      "initial_train": 20000,
+      "step": 10000,
+      "purge": 3,
+      "n_folds": 3,
+      "deployed_model": "baseline_rolling_long",
+      "first_test_round": 5842149,
+      "last_test_round": 5872148,
+      "ablation": null,
+      "run_id": "R2AFF817200934ACF"
+    }
+  },
+  "by_target": [
+    {
+      "target": 1.5,
+      "n": 30000,
+      "rate": 0.9595666666666667,
+      "announced": 0.9603269182271514,
+      "brier": 0.0388050530172226
+    },
+    {
+      "target": 2.0,
+      "n": 30000,
+      "rate": 0.8713333333333333,
+      "announced": 0.8709091766529692,
+      "brier": 0.11213069647409384
+    },
+    {
+      "target": 2.5,
+      "n": 30000,
+      "rate": 0.7799666666666667,
+      "announced": 0.7798896558941046,
+      "brier": 0.17162210342674014
+    },
+    {
+      "target": 5.0,
+      "n": 30000,
+      "rate": 0.48246666666666665,
+      "announced": 0.481980235691164,
+      "brier": 0.24973739002366752
+    }
+  ],
+  "verdict": {
+    "status": "aucun avantage statistiquement significatif",
+    "detail": "Aucun modèle ne bat la baseline empirique de façon significative ; 16 configuration(s) font significativement pire. Le robot déploie donc la loi marginale (probabilités calibrées, sans prétention prédictive)."
+  }
+}

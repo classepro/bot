@@ -1,0 +1,25 @@
+{
+  "n_probabilities": 840000,
+  "models": [
+    "logistic",
+    "random_forest",
+    "lightgbm",
+    "xgboost"
+  ],
+  "targets": [
+    1.5,
+    2.0,
+    2.5,
+    5.0
+  ],
+  "folds": 3,
+  "duration_seconds": 147.1,
+  "n_rounds": 104893,
+  "initial_train": 20000,
+  "step": 10000,
+  "purge": 3,
+  "n_folds": 3,
+  "deployed_model": "baseline_rolling_long",
+  "first_test_round": 5842149,
+  "last_test_round": 5872148
+}

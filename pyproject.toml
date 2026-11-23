@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crashpredict"
+version = "1.0.0"
+description = "Crash Game AI Predictor — analyse statistique, backtesting walk-forward et prédictions vérifiables sur 3 manches"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "ClassePro" }]
+dependencies = [
+  "pandas>=2.0",
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "scikit-learn>=1.3",
+  "joblib>=1.3",
+  "streamlit>=1.40",
+  "plotly>=5.20",
+  "openpyxl>=3.1",
+  "pyarrow>=14.0",
+]
+
+[project.optional-dependencies]
+models = ["lightgbm>=4.0", "xgboost>=2.0", "catboost>=1.2"]
+live = ["playwright>=1.40"]
+desktop = ["PySide6>=6.6"]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+crashpredict-predict = "scripts.predict:main"
+
+[tool.setuptools.packages.find]
+include = ["crashpredict*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
