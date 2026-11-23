@@ -100,6 +100,7 @@ Tous les paramètres méthodologiques sont centralisés dans `crashpredict/confi
 | entraînement initial | 25 000 manches |
 | pas de réentraînement | 3 000 manches |
 | fenêtre d'entraînement max | 60 000 manches |
+| warm-up max (mémoire) | `initial_train + 60 000` manches |
 | cibles standard | 1.50x / 2.00x / 2.50x / 5.00x |
 | taux visé (cible optimisée) | 80 % |
 
@@ -110,7 +111,7 @@ Variable d'environnement `CRASH_DB` pour changer le chemin de la base.
 ## 7. Tests
 
 ```bash
-pytest -q                                   # 27 tests (+1 desktop sauté si Qt indisponible)
+pytest -q                                   # 34 tests (+1 desktop sauté si Qt indisponible)
 python tests/ui/check_pages.py              # les 7 pages Streamlit s'exécutent sans erreur
 ```
 

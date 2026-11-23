@@ -111,12 +111,14 @@ def run_walk_forward(
     progress=None,
     record_predictions: bool = True,
     engine: str = "base",
+    max_warmup: int | None = None,
 ) -> WalkForwardResult:
     """Exécute le walk-forward complet. `progress(fold, n_folds, msg)` optionnel."""
     targets = list(targets or CONFIG.targets.fixed)
     models = list(models or ["lightgbm", "random_forest", "logistic", "xgboost"])
     horizon = horizon or CONFIG.rules.horizon
-    initial_train = initial_train or CONFIG.backtest.initial_train
+    initial_train_requested = initial_train or CONFIG.backtest.initial_train
+    initial_train = initial_train_requested
     step = step or CONFIG.backtest.step
     purge = horizon
     max_train = CONFIG.backtest.max_train_window
@@ -126,16 +128,28 @@ def run_walk_forward(
         round_ids = pd.Series(np.arange(len(mult)), name="round_id")
     rid = pd.Series(round_ids).reset_index(drop=True)
 
-    ds = build_dataset(mult, rid, targets=targets)
-    fcols = feature_columns(ds)
-    n = len(ds)
-    usable_end = n - horizon  # après cette position, pas de futur -> pas de cible
+    full_ds = build_dataset(mult, rid, targets=targets)
+    fcols = feature_columns(full_ds)
+    n = len(full_ds)
+    # `max_warmup` permet de ne conserver qu'un historique borné (features déjà calculées
+    # sur tout le passé, donc aucun changement de valeurs) : gain de mémoire et de vitesse.
+    offset = 0
+    if max_warmup and n > max_warmup:
+        offset = n - max_warmup
+        ds = full_ds.iloc[offset:].reset_index(drop=True)
+    else:
+        ds = full_ds
+    n_eval = len(ds)
+    if initial_train > n_eval:
+        # l'utilisateur exprime un entraînement initial en manches de données réelles
+        initial_train = max(200, initial_train - offset)
+    usable_end = n_eval - horizon  # après cette position, pas de futur -> pas de cible
 
     predicted_model = "baseline_rolling_long"
     starts = list(range(initial_train, usable_end, step))
     if not starts:
         raise ValueError(
-            f"historique trop court pour un walk-forward (n={n}, initial_train={initial_train})"
+            f"historique trop court pour un walk-forward (n={n}, initial_train={initial_train_requested})"
         )
     if max_folds:
         starts = starts[:max_folds]
@@ -165,7 +179,8 @@ def run_walk_forward(
             Xtr, ytr = Xtr_all[valid], ytr[valid]
             Xte, yte = Xte_all[keep], yte[keep]
             te_rounds = test["round_id"].to_numpy()[keep]
-            te_hist = train["multiplier"].to_numpy()
+            hist_stop = offset + train_end
+            te_hist = full_ds["multiplier"].to_numpy()[:hist_stop]
 
             # ---------------- baselines empiriques (mêmes données, même causalité) ----------------
             # Historique = tout ce qui est connu AVANT la fenêtre de test ; on y ajoute
@@ -218,10 +233,11 @@ def run_walk_forward(
     probs = pd.DataFrame(rows)
     metrics, skill = _aggregate(probs, targets)
     predicted_model = choose_deployed_model(metrics, skill)
-    predictions = build_prediction_records(probs, ds, predicted_model) if record_predictions else None
+    predictions = build_prediction_records(probs, full_ds, predicted_model) if record_predictions else None
     summary = {
         "duration_seconds": round(time.time() - t0, 1),
-        "n_rounds": int(n),
+        "n_rounds": int(n_eval),
+        "warmup_excluded": int(offset),
         "initial_train": initial_train,
         "step": step,
         "purge": purge,
@@ -262,7 +278,10 @@ def build_prediction_records(probs: pd.DataFrame, dataset: pd.DataFrame, model: 
     """
     sub = probs[(probs["model"] == model) & np.isfinite(probs["p"])].copy()
     if sub.empty:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "anchor_round_id", "target", "probability", "model", "window_round_ids",
+            "window_values", "actual_max", "status", "fold", "ts",
+        ])
     ds = dataset.set_index("round_id")
     out = []
     for _, r in sub.iterrows():
@@ -288,9 +307,14 @@ def build_prediction_records(probs: pd.DataFrame, dataset: pd.DataFrame, model: 
                 "actual_max": actual,
                 "status": status,
                 "fold": int(r["fold"]),
-                "ts": row.get("ts"),
+                "ts": (row["ts"] if "ts" in row.index else None),
             }
         )
+    if not out:
+        return pd.DataFrame(columns=[
+            "anchor_round_id", "target", "probability", "model", "window_round_ids",
+            "window_values", "actual_max", "status", "fold", "ts",
+        ])
     return pd.DataFrame(out)
 
 

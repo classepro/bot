@@ -125,6 +125,7 @@ def run_training(
             m, rid, targets=targets, models=models,
             initial_train=initial_train, step=step, max_folds=max_folds,
             progress=progress, record_predictions=True, engine="base",
+            max_warmup=int(initial_train or CONFIG.backtest.initial_train) + CONFIG.backtest.max_train_window,
         )
         ablation = None
         if with_ablation:
