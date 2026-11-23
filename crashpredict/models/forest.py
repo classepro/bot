@@ -7,7 +7,7 @@ from sklearn.pipeline import Pipeline
 
 
 def make_random_forest(**kwargs):
-    n = int(kwargs.get("n_estimators", 250))
+    n = int(kwargs.get("n_estimators", 150))
     depth = kwargs.get("max_depth", 8)
     return Pipeline(
         steps=[
@@ -17,9 +17,9 @@ def make_random_forest(**kwargs):
                 RandomForestClassifier(
                     n_estimators=n,
                     max_depth=depth,
-                    min_samples_leaf=50,
+                    min_samples_leaf=200,
                     max_features="sqrt",
-                    n_jobs=-1,
+                    n_jobs=kwargs.get("n_jobs", 2),
                     random_state=kwargs.get("random_state", 42),
                 ),
             ),
@@ -34,10 +34,10 @@ def make_extra_trees(**kwargs):
             (
                 "clf",
                 ExtraTreesClassifier(
-                    n_estimators=int(kwargs.get("n_estimators", 250)),
+                    n_estimators=int(kwargs.get("n_estimators", 150)),
                     max_depth=kwargs.get("max_depth", 10),
-                    min_samples_leaf=50,
-                    n_jobs=-1,
+                    min_samples_leaf=200,
+                    n_jobs=kwargs.get("n_jobs", 2),
                     random_state=kwargs.get("random_state", 42),
                 ),
             ),

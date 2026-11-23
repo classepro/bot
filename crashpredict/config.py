@@ -64,7 +64,7 @@ class Backtest:
     test_block: int = 3_000          # taille d'un bloc de test -> 1 réentraînement
     step: int = 3_000                # granularité de réentraînement (purge = horizon)
     min_history_features: int = 50   # historique minimal pour calculer des features fiables
-    max_train_window: int = 60_000   # taille max de la fenêtre d'entraînement (réentraînement glissant)
+    max_train_window: int = 40_000   # taille max de la fenêtre d'entraînement (réentraînement glissant)
 
     @property
     def purge(self) -> int:
@@ -93,8 +93,8 @@ class Probabilities:
 @dataclass(frozen=True)
 class Training:
     random_state: int = 42
-    n_jobs: int = -1
-    calibration_folds: int = 3
+    n_jobs: int = 2                  # le sandbox a 2 cœurs ; -1 sur une machine plus large
+    calibration_folds: int = 2       # blocs de calibration chronologique
     quick_mode: bool = os.environ.get("CRASH_QUICK", "0") == "1"
 
 

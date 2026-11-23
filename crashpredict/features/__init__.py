@@ -26,7 +26,7 @@ def _rolling_past(s: pd.Series, window: int, func: str) -> pd.Series:
     return getattr(s.shift(1).rolling(window, min_periods=max(3, window // 10)), func)()
 
 
-def build_features(multipliers: pd.Series, log_levels: bool = True) -> pd.DataFrame:
+def build_features(multipliers: pd.Series) -> pd.DataFrame:
     """Construit la matrice de features causales à partir des coefficients seuls.
 
     `multipliers` doit être ordonné chronologiquement (index = position de manche).
@@ -67,7 +67,6 @@ def build_features(multipliers: pd.Series, log_levels: bool = True) -> pd.DataFr
     f["f_pct_change"] = m.pct_change().replace([np.inf, -np.inf], np.nan).fillna(0.0)
     f["f_ratio_mean5_50"] = f["f_mean_log_5"] - f["f_mean_log_50"]
 
-    # variables temporelles (si timestamp disponible)
     return f
 
 

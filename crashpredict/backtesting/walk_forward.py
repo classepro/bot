@@ -52,12 +52,24 @@ class WalkForwardResult:
 
 
 def _fit_predict(model_name: str, X_train: pd.DataFrame, y_train: np.ndarray,
-                 X_test: pd.DataFrame, seed: int = 42) -> np.ndarray:
-    """Entraîne un modèle sklearn calibré et renvoie les probabilités du bloc de test."""
+                 X_test: pd.DataFrame, seed: int = 42, calibrate: bool = True) -> np.ndarray:
+    """Entraîne un modèle sklearn CALIBRÉ et renvoie les probabilités du bloc de test.
+
+    La calibration (isotone, `TimeSeriesSplit`) est interne au train : le test
+    n'est jamais touché. Sans calibration, un GBM produirait des probabilités
+    non comparables à une fréquence empirique (comparaison déloyale).
+    """
     model = build_model(model_name, random_state=seed)
     y = np.asarray(y_train, dtype=int)
     if len(np.unique(y)) < 2:
         return np.full(len(X_test), float(y.mean()))
+    if calibrate:
+        from ..models.calibration import calibrate as wrap
+
+        try:
+            model = wrap(model, n_splits=CONFIG.training.calibration_folds)
+        except Exception:
+            pass
     model.fit(X_train, y)
     proba = model.predict_proba(X_test)
     return np.asarray(proba)[:, 1] if proba.ndim == 2 else np.asarray(proba)

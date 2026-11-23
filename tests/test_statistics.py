@@ -66,3 +66,24 @@ def test_holm_is_monotone_and_bounded():
 def test_binomial_no_drift_on_fair_process():
     res = binomial_test_vs_rate(5000, 10000, 0.5)
     assert res["p_value"] > 0.01
+
+
+def test_chronological_calibrator_improves_calibration_only_with_signal():
+    """Le calibrateur ne doit pas inventer de signal : probabilités toujours dans [0,1] et monotone."""
+    import numpy as np
+
+    from crashpredict.models.calibration import calibrate
+    from crashpredict.models.linear import make_logistic
+
+    rng = np.random.default_rng(7)
+    X = rng.normal(size=(3000, 5))
+    # la seule variable utile est la première, avec une relation logistique modérée
+    logits = 0.8 * X[:, 0]
+    y = (rng.uniform(size=3000) < 1 / (1 + np.exp(-logits))).astype(int)
+    order = np.argsort(X[:, 3])  # ordre chronologique (sans lien avec y)
+    X, y = X[order], y[order]
+
+    model = calibrate(make_logistic(), n_splits=2).fit(X[:2500], y[:2500])
+    p = model.predict_proba(X[2500:])[:, 1]
+    assert np.all((p >= 0) & (p <= 1))
+    assert np.all(np.diff(np.sort(p)) >= 0)

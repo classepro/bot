@@ -47,10 +47,10 @@ def feature_group_ablation(
     multipliers: pd.Series,
     round_ids: pd.Series,
     target: float,
-    model_name: str = "lightgbm",
+    model_name: str = "logistic",
     initial_train: int | None = None,
     step: int | None = None,
-    max_folds: int = 2,
+    max_folds: int = 1,
 ) -> pd.DataFrame:
     """Mesure l'apport marginal de chaque famille de features (test d'honnêteté).
 
@@ -100,7 +100,7 @@ def run_training(
     initial_train: int | None = None,
     step: int | None = None,
     max_folds: int | None = None,
-    with_ablation: bool = True,
+    with_ablation: bool = False,
     ablation_target: float = 2.0,
     progress=None,
 ) -> dict:

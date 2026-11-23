@@ -29,6 +29,7 @@ def main() -> int:
     ap.add_argument("--max-folds", type=int, default=None)
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--no-ablation", action="store_true")
+    ap.add_argument("--catboost", action="store_true", help="ajouter CatBoost (plus lent)")
     args = ap.parse_args()
 
     db.init_db()
@@ -39,7 +40,10 @@ def main() -> int:
     print("Données:", fp, flush=True)
     targets = args.targets or CONFIG.targets.fixed
     models = args.models or DEFAULT_MODELS
+    if args.catboost and "catboost" not in models:
+        models = models + ["catboost"]
     if args.quick:
+        args.no_ablation = True
         args.max_folds = args.max_folds or 3
         args.step = args.step or 10000
     try:

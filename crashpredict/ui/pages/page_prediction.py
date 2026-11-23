@@ -134,6 +134,36 @@ def render() -> None:
     strat_df.columns = ["Stratégie", "Cible", "Probabilité estimée", "Manches analysées", "Succès attendus", "Niveau"]
     df_box(strat_df)
 
+    st.markdown("#### Prédictions proposées (enregistrées en un clic)")
+    cols = st.columns(len(CONFIG.targets.fixed) + 1)
+    for col, target in zip(cols, CONFIG.targets.fixed):
+        with col:
+            est = probability_grid([float(r["multiplier"]) for r in db.get_rounds()], targets=[target])[0]
+            st.markdown(
+                f"<div class='cp-card'><div class='cp-label'>Cible {target:.2f}x</div>"
+                f"<div class='cp-value'>{est['probability']*100:.1f} %</div>"
+                f"<div class='cp-sub'>produit {est['probability']*target:.2f} unités</div></div>",
+                unsafe_allow_html=True,
+            )
+            if st.button(f"Enregistrer {target:.2f}x", key=f"save_{target}"):
+                try:
+                    res = make_prediction(target=target)
+                except RuntimeError as exc:
+                    st.error(str(exc))
+                else:
+                    st.session_state["last_prediction"] = res
+                    st.success(f"{res['id']} enregistrée")
+                    st.rerun()
+    with cols[-1]:
+        opt = analysis["optimized"]
+        if opt.get("target"):
+            st.markdown(
+                f"<div class='cp-card'><div class='cp-label'>Optimisée 80 %</div>"
+                f"<div class='cp-value'>{opt['probability']*100:.1f} %</div>"
+                f"<div class='cp-sub'>cible {opt['target']:.2f}x</div></div>",
+                unsafe_allow_html=True,
+            )
+
     st.markdown("#### Explication des variables")
     with st.expander("Pourquoi cette probabilité ? (détail complet)", expanded=False):
         a = analysis

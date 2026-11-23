@@ -136,15 +136,29 @@ python -m crashpredict.ui.desktop.app
 Mêmes fonctions que la version web : dashboard, prédiction, historique, entraînement
 (thread séparé), données, rapport.
 
-## 6. Tests et contrôles
+## 6. Performances de calcul
+
+Mesures sur 2 cœurs (conteneur) avec calibration isotone chronologique :
+
+| Périmètre | Durée |
+|---|---|
+| 1 fold × 4 cibles × 4 modèles (train 40 000 manches) | ~1 min |
+| 8 folds × 4 cibles × 5 modèles | ~25 min |
+| Entraînement complet (tous les folds, 5 modèles, 4 cibles) | ~1 h |
+
+Chaque fold réentraîne **et recalibre** tous les modèles (choix méthodologique :
+un modèle non calibré n'est pas comparable à une probabilité empirique). Pour un
+essai rapide : `--max-folds 2 --step 10000`.
+
+## 7. Tests et contrôles
 
 ```bash
-pytest -q                        # 26 tests
+pytest -q                        # 35 tests
 python tests/ui/check_pages.py   # exécution réelle des 7 pages Streamlit
 python scripts/report.py --print # rapport en Markdown dans le terminal
 ```
 
-## 7. Dépannage
+## 8. Dépannage
 
 | Symptôme | Cause probable | Solution |
 |---|---|---|
@@ -155,7 +169,7 @@ python scripts/report.py --print # rapport en Markdown dans le terminal
 | `ModuleNotFoundError: lightgbm` | dépendance absente | `pip install lightgbm` (ou retirer le modèle) |
 | Les chiffres semblent « trop beaux » | doute légitime | lire `docs/04_RAPPORT_PERFORMANCE.md` : la section verdict tranche |
 
-## 8. Où sont les fichiers ?
+## 9. Où sont les fichiers ?
 
 ```
 data/crash.db            base SQLite (tout l'historique et les prédictions)
