@@ -1,10 +1,11 @@
 {
-  "n_probabilities": 840000,
+  "n_probabilities": 1152000,
   "models": [
     "logistic",
     "random_forest",
     "lightgbm",
-    "xgboost"
+    "xgboost",
+    "catboost"
   ],
   "targets": [
     1.5,
@@ -12,14 +13,14 @@
     2.5,
     5.0
   ],
-  "folds": 3,
-  "duration_seconds": 147.1,
+  "folds": 12,
+  "duration_seconds": 817.7,
   "n_rounds": 104893,
-  "initial_train": 20000,
-  "step": 10000,
+  "initial_train": 25000,
+  "step": 3000,
   "purge": 3,
-  "n_folds": 3,
+  "n_folds": 12,
   "deployed_model": "baseline_rolling_long",
-  "first_test_round": 5842149,
-  "last_test_round": 5872148
+  "first_test_round": 5847149,
+  "last_test_round": 5883148
 }

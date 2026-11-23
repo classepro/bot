@@ -110,7 +110,7 @@ Variable d'environnement `CRASH_DB` pour changer le chemin de la base.
 ## 7. Tests
 
 ```bash
-pytest -q                                   # 26 tests : règle, anti-fuite, intégrité, stats
+pytest -q                                   # 27 tests (+1 desktop sauté si Qt indisponible)
 python tests/ui/check_pages.py              # les 7 pages Streamlit s'exécutent sans erreur
 ```
 
@@ -128,7 +128,20 @@ Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas
 
 ---
 
-## 9. Avertissement
+## 9. Résultats en un coup d'œil
+
+| Élément mesuré | Résultat |
+|---|---|
+| Écarts entre probabilité annoncée et fréquence observée | ≤ 0.12 point, sur 36 000 prédictions par cible |
+| Modèles battant la baseline de façon significative (Holm) | **0 sur 28** |
+| Modèles significativement pires que la baseline | 17 sur 28 |
+| Chaînes de Markov (ordres 1 à 5) | Brier 0.1188 contre 0.1110 pour la probabilité constante |
+| Gain espéré par manche, toutes cibles | 0.989 – 0.992 (marge maison ≈ 1 %) |
+| Modèle déployé automatiquement | `baseline_rolling_long` (loi empirique) |
+
+Détail complet et reproductible : [`docs/04_RAPPORT_PERFORMANCE.md`](docs/04_RAPPORT_PERFORMANCE.md).
+
+## 10. Avertissement
 
 Un jeu de crash a une espérance mathématique négative (marge maison ≈ 1 % par manche sur cette
 implémentation). Ce logiciel produit des probabilités **descriptives** et un historique auditable ;

@@ -64,20 +64,54 @@ bruit, pas de l'information.
 ## 4. Backtest walk-forward des modèles
 
 Protocole : entraînement initial 25 000 manches, réentraînement tous les 3 000,
-purge de 3 manches, fenêtre d'entraînement ≤ 60 000, test chronologique strict.
+purge de 3 manches, fenêtre d'entraînement ≤ 60 000, test chronologique strict,
+**12 folds** couvrant les manches 5 847 149 → 5 883 148
+(36 000 prédictions par cible, 144 000 au total).
 
-Modèles comparés : régression logistique, RandomForest, ExtraTrees, LightGBM,
-XGBoost, CatBoost, MLP, plus les baselines empiriques (probabilité fixe,
-fenêtre glissante 5 000 et 500, loi catégorielle).
+Modèles comparés : régression logistique, RandomForest, LightGBM, XGBoost, CatBoost,
+plus les baselines empiriques (probabilité fixe, fenêtre glissante 5 000 et 500).
 
-Résultats (détail chiffré dans `reports/`) :
+### 4.1 Brier moyen hors échantillon
 
-- les baseline empiriques obtiennent le meilleur Brier ;
-- les modèles ML ne battent **pas** la baseline de façon significative après
-  correction de Holm ; LightGBM est même **significativement pire** (sur-apprentissage
-  de bruit : il « trouve » des motifs inexistants) ;
-- la probabilité annoncée est calibrée : taux observé ≈ probabilité annoncée à
-  chaque cible (écarts ≤ 0.2 point).
+| Modèle | Brier | Δ Brier vs baseline |
+|---|---|---|
+| baseline_fixed | 0.143315 | +0.000017 |
+| **baseline_rolling_long** (déployée) | **0.143331** | — |
+| random_forest | 0.143461 | −0.000130 |
+| logistic | 0.143700 | −0.000369 |
+| catboost | 0.143784 | −0.000452 |
+| xgboost | 0.144168 | −0.000837 |
+| lightgbm | 0.144450 | −0.001119 |
+| baseline_rolling_short | 0.143900 | −0.000569 |
+
+### 4.2 Significativité (28 tests, correction de Holm)
+
+| Résultat | Nombre de configurations (modèle × cible) |
+|---|---|
+| Modèle **meilleur** que la baseline, significativement | **0** |
+| Modèle **pire** que la baseline, significativement | **17** |
+| Différence non significative | 11 |
+
+Aucun modèle ne bat la baseline. LightGBM et XGBoost, les plus flexibles, sont
+significativement **pires** : ils ajustent du bruit et « trouvent » des motifs qui
+n'existent pas. Les modèles qui s'en sortent le mieux sont ceux qui sont les plus
+proches d'une probabilité constante.
+
+### 4.3 Calibration (cible 2.00x, 36 000 prédictions)
+
+| Tranche de probabilité | Annoncée | Observée | Écart |
+|---|---|---|---|
+| 0.8 – 0.9 | 87.04 % | 87.07 % | +0.03 pt |
+
+| Cible | Taux observé | Probabilité annoncée | Écart | Brier |
+|---|---|---|---|---|
+| 1.50x | 95.92 % | 96.04 % | −0.12 pt | 0.039 |
+| 2.00x | 87.07 % | 87.04 % | +0.03 pt | 0.113 |
+| 2.50x | 77.96 % | 77.92 % | +0.04 pt | 0.172 |
+| 5.00x | 48.15 % | 48.24 % | −0.10 pt | 0.250 |
+
+Les probabilités annoncées sont donc **honnêtes** : elles correspondent aux
+fréquences réellement observées hors échantillon, à 0.1 point près.
 
 **Décision automatique du système** : `deployed_model = baseline_rolling_long`.
 Le robot déploie la loi empirique, pas un modèle ML qui fait moins bien.
@@ -95,7 +129,19 @@ Le gain espéré par manche est **inférieur à 1.00** pour toutes les cibles : 
 marge maison (≈ 1 %) l'emporte. Le taux de validation d'une cible n'est pas un
 rendement ; c'est une fréquence.
 
-## 6. Verdict
+## 6. Reproductibilité
+
+```bash
+python scripts/import_data.py      # 104 893 manches, chaîne vérifiée
+python scripts/train.py            # walk-forward complet (4 cibles x 4 modèles)
+python scripts/report.py           # régénère reports/rapport_performance.*
+pytest -q                          # 26 tests (règle, anti-fuite, intégrité, stats)
+```
+
+Toute conclusion de ce document est recalculable à partir de la base et des
+scripts fournis ; aucun chiffre n'est saisi à la main dans le code.
+
+## 7. Verdict
 
 **Aucun avantage statistiquement significatif.** Le système :
 

@@ -38,7 +38,8 @@ def main() -> int:
         return 0
     if args.strategies:
         for s in strategy_table():
-            print(f"{s['stratégie']:<22} cible {s['cible']:>6.2f}x  probabilité {s['probabilité']*100:>5.1f} %  ({s['niveau']})")
+            label = s.get("strategie", s.get("stratégie"))
+            print(f"{label:<22} cible {s['cible']:>6.2f}x  probabilité {s['probabilité']*100:>5.1f} %  ({s['niveau']})")
         return 0
     try:
         pred = make_prediction(target=args.target, desired_rate=args.rate)
