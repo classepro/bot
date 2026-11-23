@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-23T10:10:27+00:00",
+  "generated_at": "2026-11-23T11:04:41+00:00",
   "data": {
     "n_rounds": 104893,
     "first": 5822149,
@@ -153,14 +153,15 @@
     }
   ],
   "run": {
-    "id": "R2AFF817200934ACF",
+    "id": "R1555C028505F4A80",
     "summary": {
-      "n_probabilities": 840000,
+      "n_probabilities": 1279904,
       "models": [
         "logistic",
         "random_forest",
         "lightgbm",
-        "xgboost"
+        "xgboost",
+        "catboost"
       ],
       "targets": [
         1.5,
@@ -168,52 +169,53 @@
         2.5,
         5.0
       ],
-      "folds": 3,
-      "duration_seconds": 147.1,
-      "n_rounds": 104893,
-      "initial_train": 20000,
-      "step": 10000,
+      "folds": 7,
+      "duration_seconds": 539.7,
+      "n_rounds": 100000,
+      "warmup_excluded": 4893,
+      "initial_train": 60000,
+      "step": 6000,
       "purge": 3,
-      "n_folds": 3,
+      "n_folds": 7,
       "deployed_model": "baseline_rolling_long",
-      "first_test_round": 5842149,
-      "last_test_round": 5872148,
+      "first_test_round": 5882149,
+      "last_test_round": 5922145,
       "ablation": null,
-      "run_id": "R2AFF817200934ACF"
+      "run_id": "R1555C028505F4A80"
     }
   },
   "by_target": [
     {
       "target": 1.5,
-      "n": 30000,
-      "rate": 0.9595666666666667,
-      "announced": 0.9603269182271514,
-      "brier": 0.0388050530172226
+      "n": 39997,
+      "rate": 0.9601220091506864,
+      "announced": 0.9607415501714864,
+      "brier": 0.03829051769211751
     },
     {
       "target": 2.0,
-      "n": 30000,
-      "rate": 0.8713333333333333,
-      "announced": 0.8709091766529692,
-      "brier": 0.11213069647409384
+      "n": 39997,
+      "rate": 0.8745155886691501,
+      "announced": 0.8720048834006815,
+      "brier": 0.10975944522006183
     },
     {
       "target": 2.5,
-      "n": 30000,
-      "rate": 0.7799666666666667,
-      "announced": 0.7798896558941046,
-      "brier": 0.17162210342674014
+      "n": 39997,
+      "rate": 0.7838837912843464,
+      "announced": 0.7822108674021061,
+      "brier": 0.16945149740358587
     },
     {
       "target": 5.0,
-      "n": 30000,
-      "rate": 0.48246666666666665,
-      "announced": 0.481980235691164,
-      "brier": 0.24973739002366752
+      "n": 39997,
+      "rate": 0.4881616121209091,
+      "announced": 0.4876542924111582,
+      "brier": 0.2499462751084596
     }
   ],
   "verdict": {
     "status": "aucun avantage statistiquement significatif",
-    "detail": "Aucun modèle ne bat la baseline empirique de façon significative ; 16 configuration(s) font significativement pire. Le robot déploie donc la loi marginale (probabilités calibrées, sans prétention prédictive)."
+    "detail": "Aucun modèle ne bat la baseline empirique de façon significative ; 7 configuration(s) font significativement pire. Le robot déploie donc la loi marginale (probabilités calibrées, sans prétention prédictive)."
   }
 }

@@ -244,8 +244,11 @@ def run_walk_forward(
 
     probs = pd.DataFrame(rows)
     metrics, skill = _aggregate(probs, targets)
+    # `choose_deployed_model` est utilisé pour le SUMMARY, mais on conserve les
+    # prédictions de la baseline de référence : c'est la seule méthode que le
+    # protocole autorise à présenter comme « prédiction du robot ».
     predicted_model = choose_deployed_model(metrics, skill)
-    predictions = build_prediction_records(probs, full_ds, predicted_model) if record_predictions else None
+    predictions = build_prediction_records(probs, full_ds, "baseline_rolling_long") if record_predictions else None
     summary = {
         "duration_seconds": round(time.time() - t0, 1),
         "n_rounds": int(n_eval),

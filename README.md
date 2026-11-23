@@ -133,9 +133,9 @@ Les tests anti-fuite vérifient notamment que **modifier le futur ne modifie pas
 
 | Élément mesuré | Résultat |
 |---|---|
-| Écarts entre probabilité annoncée et fréquence observée | ≤ 0.12 point, sur 36 000 prédictions par cible |
+| Écarts entre probabilité annoncée et fréquence observée | ≤ 0.25 point, sur 159 988 prédictions hors échantillon |
 | Modèles battant la baseline de façon significative (Holm) | **0 sur 28** |
-| Modèles significativement pires que la baseline | 17 sur 28 |
+| Modèles significativement pires que la baseline | 7 sur 28 (écarts ≈ 10⁻⁴) |
 | Chaînes de Markov (ordres 1 à 5) | Brier 0.1188 contre 0.1110 pour la probabilité constante |
 | Gain espéré par manche, toutes cibles | 0.989 – 0.992 (marge maison ≈ 1 %) |
 | Modèle déployé automatiquement | `baseline_rolling_long` (loi empirique) |

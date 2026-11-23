@@ -1,6 +1,6 @@
 # Rapport de performance — Crash Game AI Predictor
 
-Généré le **2026-11-23T10:10:27+00:00** · run `R2AFF817200934ACF`
+Généré le **2026-11-23T11:04:41+00:00** · run `R1555C028505F4A80`
 
 ## 1. Données
 
@@ -50,11 +50,11 @@ Ordres de Markov testés en walk-forward pour la cible 2.00x :
 
 | Cible | Prédictions | Taux observé | Probabilité annoncée | Brier |
 |---|---|---|---|---|
-| 1.5x | 30 000 | 95.96 % | 96.03 % | 0.038805 |
-| 2x | 30 000 | 87.13 % | 87.09 % | 0.112131 |
-| 2.5x | 30 000 | 78.00 % | 77.99 % | 0.171622 |
-| 5x | 30 000 | 48.25 % | 48.20 % | 0.249737 |
+| 1.5x | 39 997 | 96.01 % | 96.07 % | 0.038291 |
+| 2x | 39 997 | 87.45 % | 87.20 % | 0.109759 |
+| 2.5x | 39 997 | 78.39 % | 78.22 % | 0.169451 |
+| 5x | 39 997 | 48.82 % | 48.77 % | 0.249946 |
 
 ## 6. Conclusion
 
-**AUCUN AVANTAGE STATISTIQUEMENT SIGNIFICATIF** — Aucun modèle ne bat la baseline empirique de façon significative ; 16 configuration(s) font significativement pire. Le robot déploie donc la loi marginale (probabilités calibrées, sans prétention prédictive).
+**AUCUN AVANTAGE STATISTIQUEMENT SIGNIFICATIF** — Aucun modèle ne bat la baseline empirique de façon significative ; 7 configuration(s) font significativement pire. Le robot déploie donc la loi marginale (probabilités calibrées, sans prétention prédictive).

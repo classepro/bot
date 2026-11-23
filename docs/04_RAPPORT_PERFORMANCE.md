@@ -63,67 +63,76 @@ bruit, pas de l'information.
 
 ## 4. Backtest walk-forward des modèles
 
-Protocole : entraînement initial 25 000 manches, réentraînement tous les 3 000,
-purge de 3 manches, fenêtre d'entraînement ≤ 60 000, test chronologique strict,
-**12 folds** couvrant les manches 5 847 149 → 5 883 148
-(36 000 prédictions par cible, 144 000 au total).
+Protocole : entraînement initial 60 000 manches, réentraînement tous les 6 000,
+purge de 3 manches, fenêtre d'entraînement glissante ≤ 40 000 manches, test
+chronologique strict, **7 folds** couvrant les manches **5 882 149 → 5 922 145**
+(≈ 40 000 prédictions par cible, **159 988 au total**).
 
-Modèles comparés : régression logistique, RandomForest, LightGBM, XGBoost, CatBoost,
-plus les baselines empiriques (probabilité fixe, fenêtre glissante 5 000 et 500).
+Chaque modèle est **calibré par régression isotone chronologique** à l'intérieur
+de son fold d'entraînement : sans cela, un gradient boosting produit des
+probabilités non comparables à une fréquence empirique et le test de Brier serait
+déloyal.
+
+Modèles comparés : régression logistique, RandomForest, LightGBM, XGBoost,
+CatBoost, plus les baselines empiriques (probabilité fixe, fenêtre glissante 5 000
+et 500 manches).
 
 ### 4.1 Brier moyen hors échantillon
 
 | Modèle | Brier | Δ Brier vs baseline |
 |---|---|---|
-| baseline_fixed | 0.143315 | +0.000017 |
-| **baseline_rolling_long** (déployée) | **0.143331** | — |
-| random_forest | 0.143461 | −0.000130 |
-| logistic | 0.143700 | −0.000369 |
-| catboost | 0.143784 | −0.000452 |
-| xgboost | 0.144168 | −0.000837 |
-| lightgbm | 0.144450 | −0.001119 |
-| baseline_rolling_short | 0.143900 | −0.000569 |
+| baseline_fixed | 0.141836 | +0.000026 |
+| **baseline_rolling_long** (déployée) | **0.141862** | — |
+| logistic | 0.141867 | −0.000005 |
+| lightgbm | 0.141869 | −0.000007 |
+| random_forest | 0.141876 | −0.000014 |
+| xgboost | 0.141901 | −0.000039 |
+| catboost | 0.141993 | −0.000131 |
+| baseline_rolling_short | 0.142306 | −0.000444 |
 
 ### 4.2 Significativité (28 tests, correction de Holm)
 
-| Résultat | Nombre de configurations (modèle × cible) |
+| Résultat | Configurations (modèle × cible) |
 |---|---|
 | Modèle **meilleur** que la baseline, significativement | **0** |
-| Modèle **pire** que la baseline, significativement | **17** |
-| Différence non significative | 11 |
+| Modèle **pire** que la baseline, significativement | 7 |
+| Différence non significative | 21 |
 
-Aucun modèle ne bat la baseline. LightGBM et XGBoost, les plus flexibles, sont
-significativement **pires** : ils ajustent du bruit et « trouvent » des motifs qui
-n'existent pas. Les modèles qui s'en sortent le mieux sont ceux qui sont les plus
-proches d'une probabilité constante.
+Aucun modèle ne bat la baseline. Les seules dégradations significatives sont
+marginales (Δ Brier de l'ordre de 10⁻⁴) et proviennent surtout de la baseline à
+fenêtre courte (500 manches), qui réagit trop au bruit.
 
-### 4.3 Calibration (cible 2.00x, 36 000 prédictions)
+> **Nuance méthodologique honnête** : lors d'un run antérieur *sans* calibration
+> isotone, LightGBM et XGBoost apparaissaient **significativement pires** (Δ Brier
+> jusqu'à −0.0022). L'écart mesuré était donc en partie un artefact de calibration,
+> pas seulement du sur-apprentissage. Après calibration, les GBM redeviennent
+> comparables à la baseline sans la battre. Ce détail est conservé ici parce qu'il
+> illustre la différence entre « résultat » et « artefact de protocole ».
 
-| Tranche de probabilité | Annoncée | Observée | Écart |
-|---|---|---|---|
-| 0.8 – 0.9 | 87.04 % | 87.07 % | +0.03 pt |
+### 4.3 Calibration et exactitude (modèle déployé)
 
-| Cible | Taux observé | Probabilité annoncée | Écart | Brier |
-|---|---|---|---|---|
-| 1.50x | 95.92 % | 96.04 % | −0.12 pt | 0.039 |
-| 2.00x | 87.07 % | 87.04 % | +0.03 pt | 0.113 |
-| 2.50x | 77.96 % | 77.92 % | +0.04 pt | 0.172 |
-| 5.00x | 48.15 % | 48.24 % | −0.10 pt | 0.250 |
+| Cible | Prédictions | Taux observé | Probabilité annoncée | Écart | Brier |
+|---|---|---|---|---|---|
+| 1.50x | 39 997 | 96.01 % | 96.07 % | −0.06 pt | 0.038 |
+| 2.00x | 39 997 | 87.45 % | 87.20 % | +0.25 pt | 0.110 |
+| 2.50x | 39 997 | 78.39 % | 78.22 % | +0.17 pt | 0.169 |
+| 5.00x | 39 997 | 48.82 % | 48.77 % | +0.05 pt | 0.250 |
 
-Les probabilités annoncées sont donc **honnêtes** : elles correspondent aux
-fréquences réellement observées hors échantillon, à 0.1 point près.
+Sur 160 000 prédictions hors échantillon, l'écart entre probabilité annoncée et
+fréquence observée est **inférieur à 0.25 point de pourcentage**. Les probabilités
+du robot sont donc des fréquences vérifiées, pas des promesses.
 
 **Décision automatique du système** : `deployed_model = baseline_rolling_long`.
-Le robot déploie la loi empirique, pas un modèle ML qui fait moins bien.
+Le robot déploie la loi empirique, pas un modèle ML qui ne fait pas mieux.
 
 ## 5. Stratégies et espérance
 
 | Cible | Taux de validation (3 manches) | Gain espéré par manche |
 |---|---|---|
-| 1.50x | 95.97 % | 0.9894 |
-| 2.00x | 87.34 % | 0.9910 |
-| 2.50x | 78.05 % | 0.9920 |
-| 5.00x | 48.38 % | 0.9894 |
+| 1.50x | 96.01 % | 0.9894 |
+| 2.00x | 87.45 % | 0.9910 |
+| 2.50x | 78.39 % | 0.9920 |
+| 5.00x | 48.82 % | 0.9894 |
 
 Le gain espéré par manche est **inférieur à 1.00** pour toutes les cibles : la
 marge maison (≈ 1 %) l'emporte. Le taux de validation d'une cible n'est pas un

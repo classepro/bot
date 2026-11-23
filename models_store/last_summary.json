@@ -1,5 +1,5 @@
 {
-  "n_probabilities": 1152000,
+  "n_probabilities": 1279904,
   "models": [
     "logistic",
     "random_forest",
@@ -13,14 +13,15 @@
     2.5,
     5.0
   ],
-  "folds": 12,
-  "duration_seconds": 817.7,
-  "n_rounds": 104893,
-  "initial_train": 25000,
-  "step": 3000,
+  "folds": 7,
+  "duration_seconds": 539.7,
+  "n_rounds": 100000,
+  "warmup_excluded": 4893,
+  "initial_train": 60000,
+  "step": 6000,
   "purge": 3,
-  "n_folds": 12,
+  "n_folds": 7,
   "deployed_model": "baseline_rolling_long",
-  "first_test_round": 5847149,
-  "last_test_round": 5883148
+  "first_test_round": 5882149,
+  "last_test_round": 5922145
 }
